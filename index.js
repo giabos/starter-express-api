@@ -1,30 +1,19 @@
-const puppeteer = require('puppeteer')
-const express = require('express')
-const app = express()
+const rp = require('request-promise');
+const cheerio = require('cheerio');
+const express = require('express');
+const app = express();
 
 
 async function scrape() {
-   const browser = await puppeteer.launch({headless: 'new', args: ['--no-sandbox']})
-   const page = await browser.newPage()
 
-   await page.goto('https://www.redlights.be/prive-ontvangst/dames/porno-babe.html');
+   const html = await rp('https://www.redlights.be/prive-ontvangst/dames/porno-babe.html');
+   const $ = cheerio.load(html);
 
-    
-   const element = await page.waitForSelector(".phone-bar");
-   const text = await page.evaluate(element => element.textContent, element)
-   const dateStr = /(à|op)\s(.*)$/.exec(text)[2];
+   const text = $('.phone-bar').text();
+   const dateStr = /(à|om)\s(.*)$/.exec(text)[2];
 
 
-   const imgElement = await page.waitForSelector(".avatar-wrapper img");
-   const profileImgUrl = await page.evaluate(element => element.src, imgElement)
-
-
-
-   
-   console.log(text)
-
-
-   browser.close()
+   const profileImgUrl = $('.avatar-wrapper img').attr('src');
 
    return ({dateStr, profileImgUrl});
 }
