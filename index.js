@@ -1,26 +1,39 @@
 const rp = require('request-promise');
 const cheerio = require('cheerio');
+const Promise = require('promise');
 const express = require('express');
 const app = express();
 
 
-async function scrape() {
+async function scrapeProfile(url) {
+    console.log("--", url);
+    const html = await rp(url);
+    const $ = cheerio.load(html);
 
-   const html = await rp('https://www.redlights.be/prive-ontvangst/dames/porno-babe.html');
-   const $ = cheerio.load(html);
+    const text = $('.phone-bar').text();
+    const dateStr = /(à|om|op|le)\s(.*)$/.exec(text)[2];
 
-   const text = $('.phone-bar').text();
-   const dateStr = /(à|om)\s(.*)$/.exec(text)[2];
+    const profileImgUrl = $('.avatar-wrapper img').attr('src');
 
+   const location = $('.article-subtitle a').first().text();
 
-   const profileImgUrl = $('.avatar-wrapper img').attr('src');
-
-   return ({dateStr, profileImgUrl});
+   return ({dateStr, profileImgUrl, location, url});
 }
 
-app.all('/', async (req, res) => {
-    console.log("Just got a request!")
-    const resp = await scrape();
+async function scrapeList(url) {
+    const html = await rp(url);
+    const $ = cheerio.load(html);
+    const list = [];
+    $('article a.avatar-item').each((i, e) => {
+        list.push($(e).attr('href'));
+    });
+    return list;
+}
+
+app.all('/:url', async (req, res) => {
+    console.dir(req.params);
+    const list = await scrapeList(req.params.url);
+    const resp = await Promise.all(list.map(url => scrapeProfile(url)));
     res.contentType = 'application/json';
     res.send(resp)
 })
