@@ -38,9 +38,8 @@ app.get('/status', (req, res) => {
 });
 
 app.get('/scrape', async (req, res) => {
-    console.dir(req.query);
     const list = await scrapeList(req.query.url);
-    const resp = await Promise.all(list.map(url => scrapeProfile(url)));
+    const resp = await Promise.all(list.map(url => scrapeProfile(url)).filter(a => !!a.location);
     res.contentType = 'application/json';
     res.send(resp)
 })
