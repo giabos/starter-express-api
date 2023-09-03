@@ -30,9 +30,13 @@ async function scrapeList(url) {
     return list;
 }
 
-app.all('/:url', async (req, res) => {
-    console.dir(req.params);
-    const list = await scrapeList(req.params.url);
+app.get('/status', (req, res) => {
+    res.json({ok: true});
+});
+
+app.get('/scrape', async (req, res) => {
+    console.dir(req.query);
+    const list = await scrapeList(req.query.url);
     const resp = await Promise.all(list.map(url => scrapeProfile(url)));
     res.contentType = 'application/json';
     res.send(resp)
