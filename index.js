@@ -2,7 +2,10 @@ const rp = require('request-promise');
 const cheerio = require('cheerio');
 const Promise = require('promise');
 const express = require('express');
+const cors = require('cors');
 const app = express();
+
+app.use(cors());
 
 
 async function scrapeProfile(url) {
