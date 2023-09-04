@@ -14,7 +14,7 @@ async function scrapeProfile(url) {
     const $ = cheerio.load(html);
 
     const text = $('.phone-bar').text();
-    const dateStr = /(à|om|op|le)\s(.*)$/.exec(text)[2];
+    const dateStr = /\s+(à|om|op|le)\s(.*)$/.exec(text)[2];
 
     const profileImgUrl = $('.avatar-wrapper img').attr('src');
 
