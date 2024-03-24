@@ -6,11 +6,13 @@ const cors = require('cors');
 const app = express();
 
 const { v1: uuidv1 } = require('uuid');
+const bodyParser = require('body-parser');
 
 const AWS = require("aws-sdk");
 const s3 = new AWS.S3()
 
 app.use(cors());
+app.use(bodyParser.text());
 
 
 async function scrapeProfile(url) {
