@@ -5,6 +5,11 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 
+const uuidv1 = require('uuid/v1');
+
+const AWS = require("aws-sdk");
+const s3 = new AWS.S3()
+
 app.use(cors());
 
 
@@ -43,4 +48,38 @@ app.get('/scrape', async (req, res) => {
     res.contentType = 'application/json';
     res.send(resp.filter(a => !!a.location));
 })
+
+
+
+/// key-value storage api.
+
+app.get('/store/:id', async function (req, res) {
+    const result = await s3.getObject({
+        Bucket: "cyclic-hilarious-jay-coveralls-eu-west-1",
+        Key: req.params.id,
+    }).promise()
+    res.send(result);
+});
+
+
+app.post('/store', async function (req, res) {
+    const key = uuidv1();
+    await s3.putObject({
+        Body: req.body,
+        Bucket: "cyclic-hilarious-jay-coveralls-eu-west-1",
+        Key: key,
+    }).promise()
+    res.json({ success: true, id: key })
+});
+
+app.put('/store/:id', async function (req, res) {
+    await s3.putObject({
+        Body: req.body,
+        Bucket: "cyclic-hilarious-jay-coveralls-eu-west-1",
+        Key: req.params.id,
+    }).promise()
+    res.json({ success: true })
+});
+
+
 app.listen(process.env.PORT || 3000)
