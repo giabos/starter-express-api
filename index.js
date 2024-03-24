@@ -5,7 +5,7 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 
-const uuidv1 = require('uuid/v1');
+const { v1: uuidv1 } = require('uuid');
 
 const AWS = require("aws-sdk");
 const s3 = new AWS.S3()
