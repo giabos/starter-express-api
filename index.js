@@ -60,7 +60,7 @@ app.get('/store/:id', async function (req, res) {
         Bucket: "cyclic-hilarious-jay-coveralls-eu-west-1",
         Key: req.params.id,
     }).promise()
-    res.send(result);
+    res.send(result.Body.toString('utf-8'));
 });
 
 
