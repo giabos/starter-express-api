@@ -16,7 +16,7 @@ app.use(bodyParser.text());
 
 
 async function scrapeProfile(url) {
-    console.log("--", url);
+    //console.log("--", url);
     const html = await rp(url);
     const $ = cheerio.load(html);
 
