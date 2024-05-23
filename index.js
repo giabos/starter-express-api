@@ -8,11 +8,14 @@ const app = express();
 const { v1: uuidv1 } = require('uuid');
 const bodyParser = require('body-parser');
 
-const AWS = require("aws-sdk");
-const s3 = new AWS.S3()
+const sqlite3 = require('sqlite3').verbose();
+const db = new sqlite3.Database('db.sqlite3');
+
 
 app.use(cors());
-app.use(bodyParser.text());
+//app.use(bodyParser.text());
+app.use(express.text())
+
 
 
 async function scrapeProfile(url) {
@@ -52,34 +55,29 @@ app.get('/scrape', async (req, res) => {
 })
 
 
-
 /// key-value storage api.
 
-app.get('/store/:id', async function (req, res) {
-    const result = await s3.getObject({
-        Bucket: "cyclic-hilarious-jay-coveralls-eu-west-1",
-        Key: req.params.id,
-    }).promise()
-    res.send(result.Body.toString('utf-8'));
+app.get('/store/:id', function (req, res) {
+    db.get("SELECT code FROM store where rowid="+req.params.id, (err, row) => {
+        console.log(row);
+        res.send(row.code);
+    });
 });
 
-
 app.post('/store', async function (req, res) {
-    const key = uuidv1();
-    await s3.putObject({
-        Body: req.body,
-        Bucket: "cyclic-hilarious-jay-coveralls-eu-west-1",
-        Key: key,
-    }).promise()
-    res.json({ success: true, id: key })
+    db.run("CREATE TABLE if not exists store (code TEXT)");
+    const stmt = db.prepare("INSERT INTO store VALUES (?) returning rowid");
+    console.log(req.body)
+    stmt.run(req.body, function () {
+        res.json({ success: true, id: this.lastID })
+    });
+    stmt.finalize();
 });
 
 app.put('/store/:id', async function (req, res) {
-    await s3.putObject({
-        Body: req.body,
-        Bucket: "cyclic-hilarious-jay-coveralls-eu-west-1",
-        Key: req.params.id,
-    }).promise()
+    const stmt = db.prepare("update store set code = ? where rowid = ?");
+    stmt.run(req.body, req.params.id);
+    stmt.finalize();
     res.json({ success: true })
 });
 
