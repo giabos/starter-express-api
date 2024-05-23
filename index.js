@@ -59,7 +59,6 @@ app.get('/scrape', async (req, res) => {
 
 app.get('/store/:id', function (req, res) {
     db.get("SELECT code FROM store where rowid="+req.params.id, (err, row) => {
-        console.log(row);
         res.send(row.code);
     });
 });
@@ -67,7 +66,6 @@ app.get('/store/:id', function (req, res) {
 app.post('/store', async function (req, res) {
     db.run("CREATE TABLE if not exists store (code TEXT)");
     const stmt = db.prepare("INSERT INTO store VALUES (?) returning rowid");
-    console.log(req.body)
     stmt.run(req.body, function () {
         res.json({ success: true, id: this.lastID })
     });
