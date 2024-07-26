@@ -28,9 +28,9 @@ async function scrapeProfile(url) {
 
     const profileImgUrl = $('.avatar-wrapper img').attr('src');
 
-   const location = $('.article-subtitle a').first().text();
+    const location = $('.article-subtitle a').first().text();
 
-   return ({dateStr, profileImgUrl, location, url});
+    return ({ dateStr, profileImgUrl, location, url });
 }
 
 async function scrapeList(url) {
@@ -44,7 +44,7 @@ async function scrapeList(url) {
 }
 
 app.get('/status', (req, res) => {
-    res.json({ok: true});
+    res.json({ ok: true });
 });
 
 app.get('/scrape', async (req, res) => {
@@ -52,13 +52,19 @@ app.get('/scrape', async (req, res) => {
     const resp = await Promise.all(list.map(url => scrapeProfile(url)));
     res.contentType = 'application/json';
     res.send(resp.filter(a => !!a.location));
-})
+});
+
+app.get('/scrape-one', async (req, res) => {
+    const data = await scrapeProfile(req.query.url);
+    res.json(data);
+});
+
 
 
 /// key-value storage api.
 
 app.get('/store/:id', function (req, res) {
-    db.get("SELECT code FROM store where rowid="+req.params.id, (err, row) => {
+    db.get("SELECT code FROM store where rowid=" + req.params.id, (err, row) => {
         res.send(row.code);
     });
 });
