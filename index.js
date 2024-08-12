@@ -15,6 +15,9 @@ app.use(cors());
 //app.use(bodyParser.text());
 app.use(express.text());
 
+const dummyImg =
+    'https://img.freepik.com/free-photo/purple-osteospermum-daisy-flower_1373-16.jpg';
+
 async function scrapeProfile(url) {
     //console.log("--", url);
     const html = await rp(url);
@@ -26,6 +29,13 @@ async function scrapeProfile(url) {
     const location = $('.article-subtitle a').first().text();
 
     return { dateStr, profileImgUrl, location, url };
+}
+
+async function scrapeTitle(url) {
+    const html = await rp(url);
+    const $ = cheerio.load(html);
+    const location = $('title').text();
+    return { dateStr: '-', profileImgUrl: dummyImg, location, url };
 }
 
 async function scrapeList(url) {
@@ -54,13 +64,16 @@ app.get('/scrape-one', async (req, res) => {
         const data = await scrapeProfile(req.query.url);
         res.json(data);
     } catch (e) {
-        res.json({
-            dateStr: '-',
-            profileImgUrl:
-                'https://img.freepik.com/free-photo/purple-osteospermum-daisy-flower_1373-16.jpg',
-            location: '-',
-            url: req.query.url,
-        });
+        try {
+            res.json(await scrapeTitle(req.query.url));
+        } catch (e2) {
+            res.json({
+                dateStr: '-',
+                profileImgUrl: dummyImg,
+                location: '-',
+                url: req.query.url,
+            });
+        }
     }
 });
 
