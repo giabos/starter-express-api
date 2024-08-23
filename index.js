@@ -55,8 +55,17 @@ app.get('/status', (req, res) => {
 app.get('/scrape', async (req, res) => {
     const list = await scrapeList(req.query.url);
     const resp = await Promise.all(list.map((url) => scrapeProfile(url)));
+    const result = resp.filter((a) => !!a.location);
+    const allFromToday = result.every(a => /^\d{2}:\d{2}\s*$/.test(a.dateStr));
+    if (allFromToday) {
+      //page2
+      const listPage2 = await scrapeList(req.query.url + "&page=2");
+      const respPage2 = await Promise.all(listPage2.map((url) => scrapeProfile(url)));
+      const list2 = respPage2.filter((a) => !!a.location);
+      result.push(...list2);
+    }
     res.contentType = 'application/json';
-    res.send(resp.filter((a) => !!a.location));
+    res.send(result);
 });
 
 app.get('/scrape-one', async (req, res) => {
