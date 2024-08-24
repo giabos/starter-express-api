@@ -48,20 +48,23 @@ async function scrapeList(url) {
     return list;
 }
 
+async function scrapeAll(url) {
+    const list = await scrapeList(url);
+    const resp = await Promise.all(list.map((url) => scrapeProfile(url)));
+    return resp.filter((a) => !!a.location);
+}
+
+
 app.get('/status', (req, res) => {
     res.json({ ok: true });
 });
 
 app.get('/scrape', async (req, res) => {
-    const list = await scrapeList(req.query.url);
-    const resp = await Promise.all(list.map((url) => scrapeProfile(url)));
-    const result = resp.filter((a) => !!a.location);
+    const result = await scrapeAll(req.query.url);
     const allFromToday = result.every(a => /^\d{2}:\d{2}\s*$/.test(a.dateStr));
     if (allFromToday) {
-      //page2
-      const listPage2 = await scrapeList(req.query.url + "&page=2");
-      const respPage2 = await Promise.all(listPage2.map((url) => scrapeProfile(url)));
-      const list2 = respPage2.filter((a) => !!a.location);
+      // if page1 all from today also scrape page2
+      const list2 = await scrapeAll(req.query.url + "&page=2");
       result.push(...list2);
     }
     res.contentType = 'application/json';
