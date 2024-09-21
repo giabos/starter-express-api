@@ -27,8 +27,9 @@ async function scrapeProfile(url) {
     const dateStr = /\s+(à|om|op|le)\s(.*)$/.exec(text)[2];
     const profileImgUrl = $('.avatar-wrapper img').attr('src');
     const location = $('.article-subtitle a').first().text();
+    const isSafe = $('[class*="label-safe"]').length > 0;
 
-    return { dateStr, profileImgUrl, location, url };
+    return { dateStr, profileImgUrl, location, url, isSafe };
 }
 
 async function scrapeTitle(url) {
@@ -77,6 +78,7 @@ app.get('/scrape-one', async (req, res) => {
         res.json(data);
     } catch (e) {
         try {
+            // fetch only page title with url.
             res.json(await scrapeTitle(req.query.url));
         } catch (e2) {
             res.json({
